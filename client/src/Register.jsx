@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { API_URL } from './config'; // <--- IMPORT THIS!
 
 export default function Register() {
   const [email, setEmail] = useState('');
@@ -8,7 +9,9 @@ export default function Register() {
 
   async function registerUser(event) {
     event.preventDefault();
-    const response = await fetch('http://localhost:3001/api/register', {
+    
+    // 👇 UPDATED: Use API_URL instead of localhost
+    const response = await fetch(`${API_URL}/api/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
