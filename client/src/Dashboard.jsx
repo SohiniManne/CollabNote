@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-// Removed unused uuid import
+import { API_URL } from './config'; // <--- IMPORT THIS!
 
 export default function Dashboard() {
   const [documents, setDocuments] = useState([]);
@@ -9,9 +9,9 @@ export default function Dashboard() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     
-    // Define the function INSIDE useEffect to fix hoisting/dependency issues
     async function populateDashboard() {
-      const req = await fetch('http://localhost:3001/api/documents', {
+      // 👇 UPDATED: Use API_URL
+      const req = await fetch(`${API_URL}/api/documents`, {
         headers: {
           'x-access-token': token,
         },
@@ -29,13 +29,14 @@ export default function Dashboard() {
     } else {
       populateDashboard();
     }
-  }, [navigate]); // Added navigate to dependency array
+  }, [navigate]);
 
   async function createNewDocument() {
     const token = localStorage.getItem('token');
     if (!token) return navigate('/login');
 
-    const req = await fetch('http://localhost:3001/api/documents', {
+    // 👇 UPDATED: Use API_URL
+    const req = await fetch(`${API_URL}/api/documents`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
