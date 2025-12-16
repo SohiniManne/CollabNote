@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { API_URL } from './config'; // <--- IMPORT THIS!
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -8,7 +9,9 @@ export default function Login() {
 
   async function loginUser(event) {
     event.preventDefault();
-    const response = await fetch('http://localhost:3001/api/login', {
+    
+    // 👇 UPDATED: Use API_URL instead of localhost
+    const response = await fetch(`${API_URL}/api/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -19,9 +22,9 @@ export default function Login() {
     const data = await response.json();
 
     if (data.token) {
-      localStorage.setItem('token', data.token); // Save token
+      localStorage.setItem('token', data.token);
       alert('Login Successful');
-      navigate('/'); // Go to Dashboard
+      navigate('/');
     } else {
       alert('Please check your username and password');
     }
