@@ -11,7 +11,7 @@
 ## ✨ Features
 
 - **Real-Time Collaboration:** Multiple users can edit the same document instantly using Socket.io.
-- **Rich Text Editor:** Supports bold, italic, lists, code blocks, images, and **custom fonts**.
+- **Rich Text Editor:** Supports bold, italic, lists, code blocks, images, and **custom fonts** (Roboto, Montserrat, etc.).
 - **User Authentication:** Secure Login and Registration using JWT (JSON Web Tokens).
 - **Document Management:**
   - Create new documents.
@@ -50,13 +50,34 @@ Follow these steps to run the project locally on your machine.
 ```bash
 git clone [https://github.com/SohiniManne/CollabNote.git](https://github.com/SohiniManne/CollabNote.git)
 cd CollabNote
-2. Backend SetupNavigate to the server folder and install dependencies:Bashcd server
+
+2. Backend Setup
+Navigate to the server folder and install dependencies:
+Bashcd server
 npm install
-Configure Database:Ensure you have MongoDB installed locally or use MongoDB Atlas.Create a .env file in the server folder and add your connection string.Start the Server:Bashnpm start
+Configure Database:Ensure you have MongoDB installed locally or use MongoDB Atlas.Open db.js or create a .env file to add your MongoDB URI.Start the Server:Bashnpm start
 # Server runs on http://localhost:3001
 3. Frontend SetupOpen a new terminal, navigate to the client folder, and install dependencies:Bashcd client
 npm install
 Configure API URL:Open src/config.js.Set the API URL to localhost for local development:JavaScriptexport const API_URL = "http://localhost:3001";
 Start the React App:Bashnpm run dev
 # App runs on http://localhost:5173
-🔌 API EndpointsMethodEndpointDescriptionPOST/api/registerRegister a new userPOST/api/loginLogin and receive JWTGET/api/documentsGet all documents for logged-in userPOST/api/documentsCreate a new documentPUT/api/documents/:idRename a documentDELETE/api/documents/:idDelete a document📄 LicenseThis project is open-source and available under the MIT License.
+
+
+### 🔌API Endpoints
+Method,Endpoint,Description
+POST,/api/register,Register a new user
+POST,/api/login,Login and receive JWT
+GET,/api/documents,Get all documents for logged-in user
+POST,/api/documents,Create a new document
+PUT,/api/documents/:id,Rename a document
+DELETE,/api/documents/:id,Delete a document
+
+🤝 Contributing
+Contributions are welcome! Feel free to submit a pull request or open an issue if you find any bugs.
+
+📄 License
+This project is open-source and available under the MIT License.
+```bash
+git clone [https://github.com/SohiniManne/CollabNote.git](https://github.com/SohiniManne/CollabNote.git)
+cd CollabNote
