@@ -14,15 +14,16 @@ Quill.register('modules/cursors', QuillCursors)
 const SAVE_INTERVAL_MS = 2000
 const TOOLBAR_OPTIONS = [
   [{ header: [1, 2, 3, 4, 5, 6, false] }],
-  [{ font: [] }],
+  [{ font: [] }], // <--- Adds Font Family Dropdown
+  [{ size: ['small', false, 'large', 'huge'] }], // <--- Adds Font Size Dropdown
   [{ list: "ordered" }, { list: "bullet" }],
-  ["bold", "italic", "underline"],
+  ["bold", "italic", "underline", "strike"],
   [{ color: [] }, { background: [] }],
   [{ script: "sub" }, { script: "super" }],
   [{ align: [] }],
   ["image", "blockquote", "code-block"],
   ["clean"],
-]
+];
 
 // Helper: Random Color for Cursors
 const CURSOR_COLORS = ['#FF0000', '#00FF00', '#0000FF', '#FFA500', '#800080', '#008080'];
