@@ -1,21 +1,28 @@
-import { useEffect, useState, useRef } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import ReactQuill, { Quill } from 'react-quill'
-import QuillCursors from 'quill-cursors'
-import io from 'socket.io-client'
-import 'react-quill/dist/quill.snow.css'
-// NOTE: We do NOT import the cursor CSS here to avoid the Vite crash.
-// We added the styles manually to index.css instead.
-import { API_URL } from './config'
+import { useEffect, useState, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import ReactQuill, { Quill } from 'react-quill';
+import QuillCursors from 'quill-cursors';
+import io from 'socket.io-client';
+import 'react-quill/dist/quill.snow.css';
+import { API_URL } from './config';
+import { useTheme } from './ThemeContext'; // Import Theme Hook
 
-// Register the module
-Quill.register('modules/cursors', QuillCursors)
+// 1. REGISTER FONTS
+const Font = Quill.import('formats/font');
+// These names must match the CSS classes (.ql-font-roboto, etc.)
+Font.whitelist = ['roboto', 'montserrat', 'oswald', 'playfair', 'lobster', 'pacifico'];
+Quill.register(Font, true);
 
-const SAVE_INTERVAL_MS = 2000
+Quill.register('modules/cursors', QuillCursors);
+
+const SAVE_INTERVAL_MS = 2000;
+
+// 2. UPDATE TOOLBAR
 const TOOLBAR_OPTIONS = [
   [{ header: [1, 2, 3, 4, 5, 6, false] }],
-  [{ font: [] }], // <--- Adds Font Family Dropdown
-  [{ size: ['small', false, 'large', 'huge'] }], // <--- Adds Font Size Dropdown
+  // 👇 Add the Font Dropdown here
+  [{ font: ['', 'roboto', 'montserrat', 'oswald', 'playfair', 'lobster', 'pacifico'] }],
+  [{ size: ['small', false, 'large', 'huge'] }],
   [{ list: "ordered" }, { list: "bullet" }],
   ["bold", "italic", "underline", "strike"],
   [{ color: [] }, { background: [] }],
@@ -25,89 +32,69 @@ const TOOLBAR_OPTIONS = [
   ["clean"],
 ];
 
-// Helper: Random Color for Cursors
 const CURSOR_COLORS = ['#FF0000', '#00FF00', '#0000FF', '#FFA500', '#800080', '#008080'];
 const getRandomColor = () => CURSOR_COLORS[Math.floor(Math.random() * CURSOR_COLORS.length)];
 
 export default function TextEditor() {
-  const { id: documentId } = useParams()
-  const navigate = useNavigate()
-  const [socket, setSocket] = useState()
-  const [quill, setQuill] = useState()
-  const [myColor] = useState(getRandomColor()) 
+  const { id: documentId } = useParams();
+  const navigate = useNavigate();
+  const [socket, setSocket] = useState();
+  const [quill, setQuill] = useState();
+  const [myColor] = useState(getRandomColor());
+  const { darkMode, toggleTheme } = useTheme(); // Use Theme
 
-  // 1. Connect to Socket.io
   useEffect(() => {
-    const s = io(API_URL)
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSocket(s)
-    return () => { s.disconnect() }
-  }, [])
+    const s = io(API_URL);
+    setSocket(s);
+    return () => { s.disconnect(); };
+  }, []);
 
-  // 2. Setup Quill & Cursors
-  const wrapperRef = useRef(null); 
+  // ... (Keep your existing Text/Cursor useEffects exactly the same) ...
+  // I am omitting the middle logic to save space, BUT KEEP IT IN YOUR CODE! 
+  // Just ensure you add the Theme Toggle button in the return statement below.
+
+  // --- RE-ADD YOUR SOCKET LOGIC HERE (Lines 45-105 from previous version) ---
+  // (Paste your existing useEffects for text-change, selection-change, load-document here)
   
-  // 3. Handle Text Changes & Cursor Sync
+  // Re-adding the basic setup for you to paste:
+  const wrapperRef = useRef(null);
+  
   useEffect(() => {
-    if (socket == null || quill == null) return
-
-    // Text Changes
-    const textHandler = (delta, oldDelta, source) => {
-      if (source !== 'user') return
-      socket.emit("send-changes", delta)
-    }
-    quill.on('text-change', textHandler)
-
-    // Cursor Selection Changes
-    const selectionHandler = (range, oldRange, source) => {
-      if (source !== 'user' || !range) return
-      
-      const userName = "User " + Math.floor(Math.random() * 100); 
-      
-      socket.emit("send-cursor", { 
-        range: range, 
-        userId: socket.id, 
-        userName: userName,
-        color: myColor
-      })
-    }
-    quill.on('selection-change', selectionHandler)
-
-    return () => { 
-      quill.off('text-change', textHandler)
-      quill.off('selection-change', selectionHandler)
-    }
+      if (socket == null || quill == null) return
+      const textHandler = (delta, oldDelta, source) => {
+        if (source !== 'user') return
+        socket.emit("send-changes", delta)
+      }
+      quill.on('text-change', textHandler)
+      const selectionHandler = (range, oldRange, source) => {
+        if (source !== 'user' || !range) return
+        const userName = "User " + Math.floor(Math.random() * 100); 
+        socket.emit("send-cursor", { range, userId: socket.id, userName, color: myColor })
+      }
+      quill.on('selection-change', selectionHandler)
+      return () => { 
+        quill.off('text-change', textHandler)
+        quill.off('selection-change', selectionHandler)
+      }
   }, [socket, quill, myColor])
 
-  // 4. Handle Incoming Changes (Text & Cursors)
- // 4. Handle Incoming Changes (Text & Cursors)
   useEffect(() => {
     if (socket == null || quill == null) return
-
-    // Text
     const textHandler = (delta) => { quill.updateContents(delta) }
     socket.on('receive-changes', textHandler)
-
-    // Cursors
     const cursorModule = quill.getModule('cursors')
     const cursorHandler = ({ range, userId, userName, color }) => {
         if (userId === socket.id) return; 
-
-        // 🔍 DEBUG LOG: Check if this prints!
-        console.log("📍 Receiving Cursor from:", userName); 
-        
         cursorModule.createCursor(userId, userName, color);
         cursorModule.moveCursor(userId, range);
     }
     socket.on('receive-cursor', cursorHandler)
-
     return () => { 
       socket.off('receive-changes', textHandler)
       socket.off('receive-cursor', cursorHandler)
     }
   }, [socket, quill])
 
-  // 5. Join Document
   useEffect(() => {
     if (socket == null || quill == null) return
     socket.once("load-document", document => {
@@ -118,7 +105,6 @@ export default function TextEditor() {
     socket.emit("get-document", { documentId, token }) 
   }, [socket, quill, documentId])
 
-  // 6. Auto-Save
   useEffect(() => {
     if (socket == null || quill == null) return
     const interval = setInterval(() => {
@@ -129,44 +115,41 @@ export default function TextEditor() {
 
 
   return (
-    <div 
-      className="container" 
-      ref={wrapperRef}
-      style={{
-        backgroundColor: "#F3F3F3",
-        display: "flex",
-        justifyContent: "center",
-        paddingTop: "20px",
-        position: 'relative'
-      }}
-    >
-        <button 
-          onClick={() => navigate('/')}
-          style={{
-              position: 'fixed', top: '10px', left: '20px', zIndex: 100,
-              padding: '8px 15px', backgroundColor: '#6c757d', color: 'white',
-              border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold'
-          }}
-        >
-          &larr; Back to Dashboard
-        </button>
+    <div className="container" ref={wrapperRef} style={{ display: "flex", justifyContent: "center", paddingTop: "20px", position: 'relative' }}>
+        {/* Buttons Container */}
+        <div style={{ position: 'fixed', top: '10px', left: '20px', zIndex: 100, display: 'flex', gap: '10px' }}>
+            <button onClick={() => navigate('/documents')} style={styles.navBtn}>
+              &larr; Back to Dashboard
+            </button>
+            <button onClick={toggleTheme} style={styles.navBtn}>
+              {darkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
+            </button>
+        </div>
 
-         <div style={{ width: "800px", height: "90vh", backgroundColor: "white" }}>
+         <div style={{ width: "800px", height: "90vh", backgroundColor: darkMode ? "#252525" : "white" }}>
            <ReactQuill 
              theme="snow" 
              modules={{ 
-                toolbar: TOOLBAR_OPTIONS,
-                cursors: {
-                    transformOnTextChange: true,
-                    hideDelayMs: 5000 // Name tag stays visible for 5 seconds
-                } 
+               toolbar: TOOLBAR_OPTIONS,
+               cursors: { transformOnTextChange: true, hideDelayMs: 5000 } 
              }}
-             ref={(el) => {
-                if(el) { setQuill(el.getEditor()); }
-             }}
+             ref={(el) => { if(el) { setQuill(el.getEditor()); } }}
              style={{ height: "100%" }}
            />
          </div>
     </div>
   )
+}
+
+const styles = {
+    navBtn: {
+        padding: '8px 15px', 
+        backgroundColor: '#6c757d', 
+        color: 'white', 
+        border: 'none', 
+        borderRadius: '5px', 
+        cursor: 'pointer', 
+        fontWeight: 'bold',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+    }
 }
