@@ -1,4 +1,3 @@
-```markdown
 # 📝 CollabNote
 
 **CollabNote** is a real-time collaborative document editor (Google Docs clone) built using the **MERN Stack** (MongoDB, Express, React, Node.js) and **Socket.io**. It allows multiple users to edit documents simultaneously with live updates, rich text formatting, and document management features.
@@ -49,10 +48,8 @@ Follow these steps to run the project locally on your machine.
 
 ### 1. Clone the Repository
 ```bash
-git clone [https://github.com/SohiniManne/CollabNote.git](https://github.com/SohiniManne/CollabNote.git)
+git clone https://github.com/SohiniManne/CollabNote.git
 cd CollabNote
-
-```
 
 ### 2. Backend Setup
 
