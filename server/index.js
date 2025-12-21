@@ -92,6 +92,34 @@ app.post('/api/documents', async (req, res) => {
     }
 });
 
+// 5. RENAME Document (NEW ROUTE)
+app.put("/api/documents/:id", async (req, res) => {
+  const { id } = req.params;
+  const { title } = req.body;
+  
+  try {
+    // We update the title based on the ID passed in the URL
+    await Document.findByIdAndUpdate(id, { title });
+    res.json({ status: "ok" });
+  } catch (error) {
+    console.error(error);
+    res.json({ status: "error", error: "Could not rename document" });
+  }
+});
+
+// 6. DELETE Document (NEW ROUTE)
+app.delete("/api/documents/:id", async (req, res) => {
+  const { id } = req.params;
+  
+  try {
+    await Document.findByIdAndDelete(id);
+    res.json({ status: "ok" });
+  } catch (error) {
+    console.error(error);
+    res.json({ status: "error", error: "Could not delete document" });
+  }
+});
+
 // --- SOCKET.IO REAL-TIME LOGIC ---
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -127,7 +155,7 @@ io.on("connection", (socket) => {
             socket.broadcast.to(documentId).emit("receive-changes", delta);
         });
 
-        // 2. Broadcast Cursor Movements (CRITICAL FIX HERE 👇)
+        // 2. Broadcast Cursor Movements
         socket.on("send-cursor", (data) => {
             socket.broadcast.to(documentId).emit("receive-cursor", data);
         });
